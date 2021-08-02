@@ -3,7 +3,7 @@ from discord.ext import commands
 from utils.JsonIO import JsonIO
 
 private_keys = JsonIO('data/private_keys.json').read().result()
-client = commands.Bot(command_prefix=private_keys['prefix'])
+client = commands.Bot(command_prefix=private_keys['prefix'], help_command=None)
 
 
 @client.event
