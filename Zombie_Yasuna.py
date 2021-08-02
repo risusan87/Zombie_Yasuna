@@ -74,7 +74,7 @@ async def search(ctx, *args):
             'DeadEnd' if args[1].lower() in ['de', 'deadend'] else
             'BadBlood' if args[1].lower() in ['bb', 'badblood'] else
             'AlienArcadium' if args[1].lower() in ['aa', 'alienarcadium'] else
-            'Genaral'
+            'General'
         ]
         if len(args) >= 3 and search_target[0] not in ['AlienArcadium', 'General']:
             search_target.append(
@@ -114,6 +114,14 @@ async def search(ctx, *args):
         (player_stats['wins_zombies_deadend_rip'] if 'wins_zombies_deadend_rip' in player_stats.keys() else 0)
         if search_target[0] == 'DeadEnd' and search_target[1] == 'RIP' else
         (player_stats['wins_zombies_badblood'] if 'wins_zombies_badblood' in player_stats.keys() else 0)
+        if search_target[0] == 'BadBlood' and search_target[1] == 'General' else
+        (player_stats['wins_zombies_badblood_normal'] if 'wins_zombies_badblood_normal' in player_stats.keys() else 0)
+        if search_target[0] == 'BadBlood' and search_target[1] == 'Normal' else
+        (player_stats['wins_zombies_badblood_hard'] if 'wins_zombies_badblood_hard' in player_stats.keys() else 0)
+        if search_target[0] == 'BadBlood' and search_target[1] == 'Hard' else
+        (player_stats['wins_zombies_badblood_rip'] if 'wins_zombies_badblood_rip' in player_stats.keys() else 0)
+        if search_target[0] == 'BadBlood' and search_target[1] == 'RIP' else
+        (player_stats['wins_zombies_alienarcadium'] if 'wins_zombies_alienarcadium' in player_stats.keys() else 0)
 
     }
     JsonIO(file='data/zombie_statistics.json').overwrite(data=zombie_stats)
