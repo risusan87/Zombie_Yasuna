@@ -19,7 +19,9 @@ async def on_message(message):
 
 @client.command(name='help')
 async def _help(ctx, *args):
-    await ctx.channel.send('Hello')
+    help_embed = discord.Embed(title='Commands list')
+    help_embed.add_field(name='`!yasuna help`', value='Shows this message', inline=False)
+    await ctx.channel.send(embed=help_embed)
 
 
 async def init(*args, **kwargs):
