@@ -1,5 +1,7 @@
 import discord
 import requests
+import time
+import math
 from requests import request
 from mcuuid import MCUUID
 from discord.ext import commands
@@ -8,7 +10,7 @@ from utils.JsonIO import JsonIO
 
 private_keys = JsonIO('data/private_keys.json').read().result()
 client = commands.Bot(command_prefix=private_keys['prefix'], help_command=None)
-
+debugging = False
 
 @client.event
 async def on_ready():
@@ -34,7 +36,17 @@ async def on_command_error(ctx, error):
 @client.command(name='help')
 async def _help(ctx, *args):
     help_embed = discord.Embed(title='Commands list')
-    help_embed.add_field(name='`!yasuna help`', value='Shows this message', inline=False)
+    help_embed.add_field(
+        name='`!yasuna search <mcid> [map] [difficulty]`',
+        value='Shows statistics for zombies.\n'
+              'Arguments: map and difficulty are optional.',
+        inline=False
+    )
+    help_embed.add_field(
+        name='`!yasuna help`',
+        value='Shows this message',
+        inline=False
+    )
     await ctx.channel.send(embed=help_embed)
 
 
@@ -53,8 +65,11 @@ async def channel_id(ctx, *args):
 async def search(ctx, *args):
     if len(args) == 0:
         await ctx.channel.send('Hey hey! please tell me on which player to look for!')
+        await debug('Process done with an error. Returning null', ctx.channel)
+        return
     embed = discord.Embed()
     mc_player = MCUUID(name=args[0])
+
     # check mcid provided
     try:
         mc_name = mc_player.name
@@ -68,7 +83,7 @@ async def search(ctx, *args):
         await ctx.channel.send(embed=embed)
         return
     # check map and difficulty provided
-    search_target = ['General']
+    search_target = ['General', 'General']
     if len(args) >= 2:
         search_target = [
             'DeadEnd' if args[1].lower() in ['de', 'deadend'] else
@@ -100,31 +115,46 @@ async def search(ctx, *args):
     except:
         await ctx.channel.send('Could not find Arcade stats for the player!')
         return
+
+    def stats_for(base_key: str) -> int:
+        key = '{base}{map}{diff}'.format(
+            base=base_key,
+            map='' if search_target[0] == 'General' else
+            '_deadend' if search_target[0] == 'DeadEnd' else
+            '_badblood' if search_target[0] == 'BadBlood' else
+            '_alienarcadium',
+            diff='' if search_target[0] in ['General', 'AlienArcadium'] else
+            '_normal' if search_target[1] == 'Normal' else
+            '_hard' if search_target[1] == 'Hard' else
+            '_rip' if search_target[1] == 'RIP' else
+            ''
+        )
+        return player_stats[key] if key in player_stats.keys() else 0
+
     zombie_stats = {
         "stats_type": ''.join(search_target),
-        "Wins":
-        (player_stats['wins_zombies'] if 'wins_zombies' in player_stats.keys() else 0)
-        if search_target[0] == 'General' else
-        (player_stats['wins_zombies_deadend'] if 'wins_zombies_deadend' in player_stats.keys() else 0)
-        if search_target[0] == 'DeadEnd' and search_target[1] == 'General' else
-        (player_stats['wins_zombies_deadend_normal'] if 'wins_zombies_deadend_normal' in player_stats.keys() else 0)
-        if search_target[0] == 'DeadEnd' and search_target[1] == 'Normal' else
-        (player_stats['wins_zombies_deadend_hard'] if 'wins_zombies_deadend_hard' in player_stats.keys() else 0)
-        if search_target[0] == 'DeadEnd' and search_target[1] == 'Hard' else
-        (player_stats['wins_zombies_deadend_rip'] if 'wins_zombies_deadend_rip' in player_stats.keys() else 0)
-        if search_target[0] == 'DeadEnd' and search_target[1] == 'RIP' else
-        (player_stats['wins_zombies_badblood'] if 'wins_zombies_badblood' in player_stats.keys() else 0)
-        if search_target[0] == 'BadBlood' and search_target[1] == 'General' else
-        (player_stats['wins_zombies_badblood_normal'] if 'wins_zombies_badblood_normal' in player_stats.keys() else 0)
-        if search_target[0] == 'BadBlood' and search_target[1] == 'Normal' else
-        (player_stats['wins_zombies_badblood_hard'] if 'wins_zombies_badblood_hard' in player_stats.keys() else 0)
-        if search_target[0] == 'BadBlood' and search_target[1] == 'Hard' else
-        (player_stats['wins_zombies_badblood_rip'] if 'wins_zombies_badblood_rip' in player_stats.keys() else 0)
-        if search_target[0] == 'BadBlood' and search_target[1] == 'RIP' else
-        (player_stats['wins_zombies_alienarcadium'] if 'wins_zombies_alienarcadium' in player_stats.keys() else 0)
-
+        "Wins": stats_for('wins_zombies'),
+        "Rounds survived": stats_for('total_rounds_survived_zombies'),
+        "Windows repaired": stats_for('windows_repaired_zombies'),
+        "Zombies killed": stats_for('zombie_kills_zombies'),
+        "Knocked downs": stats_for('times_knocked_down_zombies'),
+        "Deaths": stats_for('deaths_zombies'),
+        "K/D ratio": round(
+            stats_for('zombie_kills_zombies') / stats_for('deaths_zombies'), 2
+        ) if stats_for('deaths_zombies') != 0 else -1,
+        "Players revived": stats_for('players_revived_zombies'),
+        "Doors opened": stats_for('doors_opened_zombies'),
+        "Bullets shot": stats_for('bullets_shot_zombies') if search_target[0] == 'General' else -1,
+        "Bullets hit": stats_for('bullets_hit_zombies') if search_target[0] == 'General' else -1,
+        "Headshots hit": stats_for('headshots_zombies') if search_target[0] == 'General' else -1,
+        "Gun accuracy": round(
+            stats_for('bullets_hit_zombies') / stats_for('bullets_shot_zombies') * 100, 2
+        ) if stats_for('bullets_shot_zombies') > 0 else -2 if search_target[0] != 'General' else -3,
+        "Headshot accuracy": round(
+            stats_for('headshots_zombies') / stats_for('bullets_shot_zombies') * 100, 2
+        ) if stats_for('bullets_shot_zombies') > 0 else -2 if search_target[0] != 'General' else -3
     }
-    JsonIO(file='data/zombie_statistics.json').overwrite(data=zombie_stats)
+    JsonIO(file='data/zombie_statistics.json').overwrite(data=player_stats)
     # setting embed
     embed.set_author(
         name='{name}\'s {stats}'.format(
@@ -137,14 +167,36 @@ async def search(ctx, *args):
         ),
         icon_url=mc_head
     )
-    embed.add_field(
-        name='Wins',
-        value=zombie_stats['Wins']
-    )
+    for cat in zombie_stats.keys():
+        if cat != 'stats_type':
+            if zombie_stats[cat] != -1 and zombie_stats[cat] != -2:
+                embed.add_field(
+                    name=cat,
+                    value=
+                    (f'{zombie_stats[cat]}%' if zombie_stats[cat] != -3 else 'N/A')
+                    if cat in ['Gun accuracy', 'Headshot accuracy'] else
+                    '{:,}'.format(zombie_stats[cat]),
+                    inline=False if cat in ['Gun accuracy', 'Headshot accuracy'] else True
+                )
     await ctx.channel.send(embed=embed)
-
-
 ##
+
+
+async def debug_start(starting_mess: str, channel: discord.TextChannel):
+    if debugging:
+        await channel.send(f'`Debug: {starting_mess}`')
+        return time.time()
+
+
+async def debug_end(end_mess: str, channel: discord.TextChannel, timestamp: float):
+    if debugging:
+        time_took = round((time.time() - timestamp) * 1000, 2)
+        await channel.send(f'`Debug: {end_mess} (took {time_took} millis)`')
+
+
+async def debug(mess: str, channel: discord.TextChannel):
+    if debugging:
+        await channel.send(f'`Debug: {mess}`')
 
 
 async def init(*args, **kwargs):
