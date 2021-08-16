@@ -168,8 +168,8 @@ async def search(ctx, *args):
         else:
             val = zombie_stats[cat] - last_rec[cat]
             delta_stats[cat] = '{}{}'.format(
-                '+' if round(val, 2) > 0 else '±0' if val == 0 else '',
-                str(val) if val != 0 else ''
+                '+' if val > 0 else '±0' if val == 0 else '',
+                str(round(val, 2)) if val != 0 else ''
             )
 
     record_io.write(
