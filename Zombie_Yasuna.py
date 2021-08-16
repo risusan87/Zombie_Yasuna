@@ -12,6 +12,7 @@ private_keys = JsonIO('data/private_keys.json').read().result()
 client = commands.Bot(command_prefix=private_keys['prefix'], help_command=None)
 debugging = False
 
+
 @client.event
 async def on_ready():
     await init()
@@ -32,7 +33,7 @@ async def on_command_error(ctx, error):
     raise error
 
 
-## COMMANDS
+# COMMANDS
 @client.command(name='help')
 async def _help(ctx, *args):
     help_embed = discord.Embed(title='Commands list')
@@ -154,7 +155,7 @@ async def search(ctx, *args):
             stats_for('headshots_zombies') / stats_for('bullets_shot_zombies') * 100, 2
         ) if stats_for('bullets_shot_zombies') > 0 else -2 if search_target[0] != 'General' else -3
     }
-    JsonIO(file='data/zombie_statistics.json').overwrite(data=player_stats)
+    JsonIO(file='data/zombie_statistics.json').write(data=player_stats, overwrite=True)
     # setting embed
     embed.set_author(
         name='{name}\'s {stats}'.format(
@@ -179,6 +180,8 @@ async def search(ctx, *args):
                     inline=False if cat in ['Gun accuracy', 'Headshot accuracy'] else True
                 )
     await ctx.channel.send(embed=embed)
+
+
 ##
 
 
