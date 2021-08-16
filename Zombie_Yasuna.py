@@ -204,7 +204,15 @@ async def search(ctx, *args):
             )
     await ctx.channel.send(embed=embed)
 
-
+@client.command()
+async def skyblock(ctx, *args):
+    dat = requests.get(
+        url='https://api.hypixel.net/resources/skyblock/collections',
+        params={
+            'key': private_keys['hypixel_api_key']
+        }
+    ).json()
+    JsonIO('data/skyblock.json').write(data=dat)
 ##
 
 
