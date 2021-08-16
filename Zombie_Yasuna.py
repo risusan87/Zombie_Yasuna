@@ -133,7 +133,6 @@ async def search(ctx, *args):
         return player_stats[key] if key in player_stats.keys() else 0
 
     zombie_stats = {
-        "stats_type": ''.join(search_target),
         "Wins": stats_for('wins_zombies'),
         "Rounds survived": stats_for('total_rounds_survived_zombies'),
         "Windows repaired": stats_for('windows_repaired_zombies'),
@@ -155,7 +154,32 @@ async def search(ctx, *args):
             stats_for('headshots_zombies') / stats_for('bullets_shot_zombies') * 100, 2
         ) if stats_for('bullets_shot_zombies') > 0 else -2 if search_target[0] != 'General' else -3
     }
-    JsonIO(file='data/zombie_statistics.json').write(data=player_stats, overwrite=True)
+    game_type = '{map}{difficulty}'.format(
+        map=search_target[0],
+        difficulty=f'_{search_target[1]}' if search_target[0] not in ('AlienArcadium', 'General') else ''
+    )
+    record_io = JsonIO(file='data/zombie_statistics.json')
+    last_rec = record_io.read().result()
+    last_rec = last_rec[mc_uuid][game_type] if mc_uuid in last_rec and game_type in last_rec[mc_uuid] else -1
+    delta_stats = {}
+    for cat in zombie_stats:
+        if last_rec == -1:
+            delta_stats[cat] = '±0'
+        else:
+            val = zombie_stats[cat] - last_rec[cat]
+            delta_stats[cat] = '{}{}'.format(
+                '+' if round(val, 2) > 0 else '±0' if val == 0 else '',
+                str(val) if val != 0 else ''
+            )
+
+    record_io.write(
+        data={
+            mc_uuid: {
+                game_type: zombie_stats
+            }
+        },
+        forceWrite=True
+    )
     # setting embed
     embed.set_author(
         name='{name}\'s {stats}'.format(
@@ -169,16 +193,15 @@ async def search(ctx, *args):
         icon_url=mc_head
     )
     for cat in zombie_stats.keys():
-        if cat != 'stats_type':
-            if zombie_stats[cat] != -1 and zombie_stats[cat] != -2:
-                embed.add_field(
-                    name=cat,
-                    value=
-                    (f'{zombie_stats[cat]}%' if zombie_stats[cat] != -3 else 'N/A')
-                    if cat in ['Gun accuracy', 'Headshot accuracy'] else
-                    '{:,}'.format(zombie_stats[cat]),
-                    inline=False if cat in ['Gun accuracy', 'Headshot accuracy'] else True
-                )
+        if zombie_stats[cat] != -1 and zombie_stats[cat] != -2:
+            embed.add_field(
+                name=cat,
+                value=
+                (f'{zombie_stats[cat]}% ({delta_stats[cat]}%)' if zombie_stats[cat] != -3 else 'N/A')
+                if cat in ['Gun accuracy', 'Headshot accuracy'] else
+                '{:,} ({})'.format(zombie_stats[cat], delta_stats[cat]),
+                inline=False if cat in ['Gun accuracy', 'Headshot accuracy'] else True
+            )
     await ctx.channel.send(embed=embed)
 
 

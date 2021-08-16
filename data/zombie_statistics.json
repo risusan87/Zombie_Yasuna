@@ -1,0 +1,74 @@
+{
+    "cb40867c502348f990c7217d87dc6a44": {
+        "General": {
+            "Wins": 94,
+            "Rounds survived": 19214,
+            "Windows repaired": 29405,
+            "Zombies killed": 313642,
+            "Knocked downs": 2045,
+            "Deaths": 1008,
+            "K/D ratio": 311.15,
+            "Players revived": 4959,
+            "Doors opened": 1948,
+            "Bullets shot": 1027525,
+            "Bullets hit": 767094,
+            "Headshots hit": 389902,
+            "Gun accuracy": 74.65,
+            "Headshot accuracy": 37.95
+        }
+    },
+    "04212f81c04943f28fff9a26221ee7db": {
+        "General": {
+            "Wins": 10,
+            "Rounds survived": 1072,
+            "Windows repaired": 1310,
+            "Zombies killed": 12528,
+            "Knocked downs": 213,
+            "Deaths": 82,
+            "K/D ratio": 152.78,
+            "Players revived": 63,
+            "Doors opened": 69,
+            "Bullets shot": 41060,
+            "Bullets hit": 29952,
+            "Headshots hit": 8423,
+            "Gun accuracy": 72.95,
+            "Headshot accuracy": 20.51
+        }
+    },
+    "750423aa7c054fc895fae20456c96b80": {
+        "General": {
+            "Wins": 219,
+            "Rounds survived": 40971,
+            "Windows repaired": 9773,
+            "Zombies killed": 477521,
+            "Knocked downs": 9539,
+            "Deaths": 6641,
+            "K/D ratio": 71.9,
+            "Players revived": 6899,
+            "Doors opened": 1849,
+            "Bullets shot": 2437581,
+            "Bullets hit": 1826328,
+            "Headshots hit": 1306278,
+            "Gun accuracy": 74.92,
+            "Headshot accuracy": 53.59
+        }
+    },
+    "5bfd95cb2ed84740a03834a38c50aa06": {
+        "General": {
+            "Wins": 321,
+            "Rounds survived": 28010,
+            "Windows repaired": 24859,
+            "Zombies killed": 368032,
+            "Knocked downs": 4343,
+            "Deaths": 2370,
+            "K/D ratio": 155.29,
+            "Players revived": 5469,
+            "Doors opened": 1406,
+            "Bullets shot": 1615233,
+            "Bullets hit": 1096460,
+            "Headshots hit": 656269,
+            "Gun accuracy": 67.88,
+            "Headshot accuracy": 40.63
+        }
+    }
+}
