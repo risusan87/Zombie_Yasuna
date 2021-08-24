@@ -2,6 +2,7 @@ import asyncio
 
 import discord
 import requests
+import json
 import time
 import math
 from requests import request
@@ -9,8 +10,11 @@ from mcuuid import MCUUID
 from discord.ext import commands, tasks
 from discord.ext.commands.errors import CommandNotFound
 from utils.JsonIO import JsonIO
+from utils import DataEncription
 
-private_keys = JsonIO('data/private_keys.json').read().result()
+with open(mode='rb', file='data/private_keys.json') as file_f:
+    raw = DataEncription.decrypt(file_f.read(), 'data').decode()
+    private_keys = json.loads(raw)
 client = commands.Bot(command_prefix=private_keys['prefix'], help_command=None)
 debugging = False
 
