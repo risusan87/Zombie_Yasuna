@@ -12,7 +12,7 @@ from discord.ext.commands.errors import CommandNotFound
 from utils.JsonIO import JsonIO
 from utils import DataEncription
 
-with open(mode='rb', file='data/private_keys.json') as file_f:
+with open(mode='rb', file='data/private_keys.keys') as file_f:
     raw = DataEncription.decrypt(file_f.read(), 'data').decode()
     private_keys = json.loads(raw)
 client = commands.Bot(command_prefix=private_keys['prefix'], help_command=None)
